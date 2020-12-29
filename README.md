@@ -5,7 +5,7 @@ Contained in this repo are the (P)hotosynthesis vs (I)rradiance data collected p
 
 These raw data have been collated into master workbooks for each time period within each site (e.g. Carmel Bay - Summer 2017 denoted as CB_SU17.xlsx). 
 
-Each sheet (e.g. species) is then run through a fit equation in `model.R` (adapted by Dr. Luke Miller for Spector and Edwards 2020) to obtain alpha (slope) and Pmax (top of slope equation). 
+Each sheet (e.g. species) is then run through a fit equation in `model.R` (adapted by Dr. Luke Miller for Spector and Edwards 2020) to obtain alpha (intercept) and Pmax (top of slope equation). 
 
 Note: this is an adaption of the work done by Webb et al. 1974 who did similar P vs I equations on pine needles. Because the light levels were smaller for this experiment (like Spector and Edwards 2020) a special model had to be created.
 
