@@ -1,8 +1,10 @@
 ############################## - Dr. Luke Miller's adapted Webb Model
 library(gdata)
-# Each document has multiple species; one on each sheet
-setwd("/Users/PikesStuff/Desktop/Never Science/What Ryhmes with Thesis?/PI_Model/")
-mydata=read.xls("PI_PLS_3_18.xls", sheet = 3 )
+library(tidyverse)
+library(readxl)
+# Each workbook has multiple species; one on each sheet
+setwd("/Users/PikesStuff/github/McHugh-et-al/Data_processed/")
+mydata=read_xlsx("CM_F16.xlsx", sheet = 1 )
 
 head(mydata)
 
@@ -45,8 +47,13 @@ plot(O2~PAR, data = mydata, cex = 1.5, col = 'red', pch = 20, las = 1,
 lines(x = backfitPARunscaled, y = backfitO2unscaled, lty = 100) 
 #text(locator(1),"y=ax") 
 
-exp(a)
-b
+alpha <- exp(a)
+pmax <- b
+
+mydata$alpha <- c(alpha)
+mydata$pmax <- c(pmax)
+view(mydata)
+
 
 # Difference among individuals (to test for normality) --------------------
 mydata=read.xls("Ptery_SWC.xls", sheet = 10)
