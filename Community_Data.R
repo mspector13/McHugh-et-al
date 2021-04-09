@@ -10,10 +10,9 @@ PL_dataz <- read_csv("PL_data.csv") %>%
 view(PL_dataz)
 
 
-ggplot(PL_dataz[which(PL_dataz$YEAR != "2015"),]) + 
+TRIS_LOOK_HERE <- ggplot(PL_dataz[which(PL_dataz$YEAR != "2015"),]) + 
   geom_bar(aes(x = TREATMENT, y = ABUNDANCE, color = SPECIES), 
            position="stack", stat="identity") +
   facet_wrap(vars(SEASON))
 
-+
-  geom_smooth(mapping = aes(x = TREATMENT, y = ABUNDANCE), method=lm) 
+TRIS_LOOK_HERE
