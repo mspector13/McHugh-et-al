@@ -16,3 +16,5 @@ TRIS_LOOK_HERE <- ggplot(PL_dataz[which(PL_dataz$YEAR != "2015"),]) +
   facet_wrap(vars(SEASON))
 
 TRIS_LOOK_HERE
+
+
