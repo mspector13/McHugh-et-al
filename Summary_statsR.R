@@ -5,7 +5,9 @@ library(gt)
 library(ggplot2)
 library(rstatix)
 
-PI_all <- read_xlsx("PI_all.xlsx")
+PI_all <- read_xlsx("PI_all.xlsx") %>% 
+  filter(Species != 'Acrosorium venulosum on Articulated Cor.')
+
 view(PI_all)
 
 #Point Loma
