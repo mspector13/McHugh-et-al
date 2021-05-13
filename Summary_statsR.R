@@ -5,6 +5,8 @@ library(gt)
 library(ggplot2)
 library(rstatix)
 
+#Production analysis/summary stats
+
 PI_all <- read_xlsx("PI_all.xlsx") %>% 
   filter(Species != 'Acrosorium venulosum on Articulated Cor.')
 
@@ -42,23 +44,24 @@ PI_all %>%
 
 #Type II ANOVA - pmax by season and site
 PI_all %>% 
-  anova_test(pmax ~ Site*Season) %>% 
+  tukey_hsd(pmax ~ Site*Season) %>% 
   gt()
 
 #Type II ANOVA - alpha by season and site
 PI_all %>% 
-  anova_test(alpha ~ Site*Season) %>% 
-  tukey_hsd() %>% 
+ tukey_hsd(alpha ~Site*Season) %>% 
   gt()
 
 #Type II ANOVA - O2 by season and site
 PI_all %>% 
-  anova_test(O2 ~ Site*Season) %>% 
+  tukey_hsd(O2 ~ Site*Season) %>% 
   gt()
+
 
 #Correlation test of one variable (pmax vs alpha) against all
 PI_all %>% 
-  cor_test(alpha, method = "pearson")
+  cor_test(alpha, method = "pearson") %>% 
+  gt()
 
 
 

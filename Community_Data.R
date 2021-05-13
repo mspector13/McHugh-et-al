@@ -17,4 +17,8 @@ TRIS_LOOK_HERE <- ggplot(PL_dataz[which(PL_dataz$YEAR != "2015"),]) +
 
 TRIS_LOOK_HERE
 
+CM_dataz <- read_csv("CM_data.csv") %>% 
+  separate(SEASON, c("SEASON", "YEAR"), " ")
+
+view(CM_data)
 
