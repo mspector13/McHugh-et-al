@@ -1,0 +1,82 @@
+---
+title: "some troubleshooting"
+author: 'An Bui'
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries-data, message = FALSE}
+# libraries
+library(tidyverse)
+library(vegan)
+library(here)
+
+# data
+# algal  communities
+PointLoma <- read_csv(here::here("AB-troubleshooting", "PL_div.csv")) %>% 
+  column_to_rownames("Site")
+
+# environmental variables
+meta <- read_csv(here::here("AB-troubleshooting", "PL_div_meta.csv"))
+
+# set up a "metadata" frame - will be useful for plotting later!
+site_type <- meta %>% 
+  # selects the named columns
+  select(Site, Region, Plot, Treatment, Season, Year)
+```
+
+#### NMDS
+
+Non-metric Multidimensional Scaling  
+
+Ok, so this is kinda tricky because it turns out that some of your sites had 0 observations. So, not an issue with your species! I filtered out sites with 0 observations by summing all observations for each site, then filtering out any row with a sum of observations greater than 0 (essentially only keeping sites with some algae counted).  
+
+```{r algae-NMDS}
+PointLoma1 <- PointLoma %>% 
+  # filter out sites with 0 observations
+  mutate(sum = rowSums(across(where(is.numeric)))) %>% 
+  filter(sum > 0) %>% 
+  select(-sum) 
+```
+
+Then, I pulled a vector of the sites that were kept (seems like there are 409 of them). This is going to be useful later, when the `meta` dataframe has to be filtered for the sites that are included in the NMDS.
+```{r}
+# pull row names from PointLoma1 (which will tell you which sites DID have observations)
+kept_sites <- PointLoma1 %>% 
+  # turn row names back into a column
+  rownames_to_column("site") %>% 
+  # pull the site column as a vector
+  pull(site)
+
+kept_sites
+```
+
+Now the NMDS! Should be working.
+```{r}
+alg_NMDS <- metaMDS(PointLoma1)
+
+alg_NMDS
+```
+
+Here's where I filter the `meta` data frame for all sites in `kept_sites`:
+```{r}
+kept_meta <- meta %>% 
+  filter(Site %in% kept_sites)
+```
+
+And now a plot:
+```{r NMDS-plot}
+# extract outputs of nMDS into data frame
+nmds_df <- as_tibble(alg_NMDS$points) %>% 
+  # binding it with metadata
+  bind_cols(kept_meta, .)
+
+nmds_plot <- ggplot(nmds_df, aes(x = MDS1, y = MDS2, color = Treatment, shape = Treatment)) +
+  geom_point(size = 3, alpha = 0.8) +
+  stat_ellipse()
+nmds_plot
+```
