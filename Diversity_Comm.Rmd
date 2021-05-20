@@ -140,7 +140,7 @@ Non-metric Multidimensional Scaling
 PointLoma1 <- PointLoma %>% 
   na.omit()
 
-alg_NMDS <- metaMDS(PointLoma1)
+alg_NMDS <- metaMDS(PointLoma)
 
 algNMDS
 

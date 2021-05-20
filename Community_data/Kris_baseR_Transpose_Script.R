@@ -34,9 +34,12 @@ write.csv(PL_data, "PL_data.csv", row.names = F)
 
 # CM_Community###ERRORS ------------------------------------------------------------
 
-CM_Comm <- read_xls("McHugh_Carmel Bay Data.xls") %>% 
+CM_Comm <- read_xls("./Community_data/McHugh_Carmel Bay Data.xls", sheet = 1) %>% 
   as.data.frame()
 CM_Comm
+
+write_csv(CM_Comm, "CM_Comm.csv")
+view(CM_Comm)
 
 CM_Comm <- cbind(c(1, cumsum(diff(match(CM_Comm$SITE, unique(CM_Comm$SITE))) != 0)+1), CM_Comm)
 names(CM_Comm)[1] <- "SITE_DAY"
