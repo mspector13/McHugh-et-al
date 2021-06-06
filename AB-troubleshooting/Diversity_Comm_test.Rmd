@@ -212,3 +212,38 @@ cca_plot <- ggplot(site_data) +
   geom_text(data = ccavectors, aes(x = CCA1, y = CCA2, label = rownames(ccavectors)))
 cca_plot
 ```
+
+```{r}
+#Let's run a PERMANOVA with the sample dune dataset
+data(dune)
+data(dune.env)
+View(dune)
+View(dune.env)
+
+#compute dissimilarity indices with "bray-curtis"; can change method= to accommodate "manhattan", "euclidean" etc
+dune.dist <- vegdist(dune, method="bray")
+pl.dist <- vegdist(PointLoma1,
+                   method = "bray")
+
+# default test by terms;
+#note: 'Management' is a FACTOR in dune.env
+dune.div <- adonis2(dune ~ Management*A1, data = dune.env, permutations = 999, method="bray")
+
+pl.div <- adonis2(PointLoma1 ~Treatment*Season, data = meta,
+                  permutations = 999, method = "bray")
+#returns the expected table
+dune.div %>% 
+  gt()
+
+# overall tests; "Permutation test for adonis under reduced model"
+#adonis/adonis2 (apparently) use "distance matrices" when running a PERMANOVA
+adonis2(dune ~ Management*A1, data = dune.env, permutations = 999, method="bray", by = NULL)
+
+# Bedadisper is a multivariate analogue of Levene’s test for homogeneity of variances. 
+
+dispersion <- betadisper(dune.dist, group=dune.env$Management)
+permutest(dispersion)
+plot(dispersion, hull=FALSE, ellipse=TRUE) ##sd ellipse
+
+```
+

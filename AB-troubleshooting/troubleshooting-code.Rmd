@@ -21,10 +21,10 @@ PointLoma <- read_csv(here::here("AB-troubleshooting", "PL_div.csv")) %>%
   column_to_rownames("Site")
 
 # environmental variables
-meta <- read_csv(here::here("AB-troubleshooting", "PL_div_meta.csv"))
+pl_meta <- read_csv(here::here("AB-troubleshooting", "PL_div_meta.csv"))
 
 # set up a "metadata" frame - will be useful for plotting later!
-site_type <- meta %>% 
+site_type <- pl_meta %>% 
   # selects the named columns
   select(Site, Region, Plot, Treatment, Season, Year)
 ```
@@ -64,7 +64,7 @@ alg_NMDS
 
 Here's where I filter the `meta` data frame for all sites in `kept_sites`:
 ```{r}
-kept_meta <- meta %>% 
+kept_pl_meta <- pl_meta %>% 
   filter(Site %in% kept_sites)
 ```
 
@@ -73,10 +73,29 @@ And now a plot:
 # extract outputs of nMDS into data frame
 nmds_df <- as_tibble(alg_NMDS$points) %>% 
   # binding it with metadata
-  bind_cols(kept_meta, .)
+  bind_cols(kept_pl_meta, .)
 
 nmds_plot <- ggplot(nmds_df, aes(x = MDS1, y = MDS2, color = Treatment, shape = Treatment)) +
   geom_point(size = 3, alpha = 0.8) +
   stat_ellipse()
 nmds_plot
 ```
+
+```{r}
+#PERMANOVA
+pl.div <- adonis2(PointLoma1 ~Treatment*Season, data = kept_pl_meta,
+                  permutations = 999, method = "bray")
+pl.div
+```
+
+```{r}
+#dispersion
+pl.dist <- vegdist(PointLoma1,
+                   method = "bray")
+
+dispersion <- betadisper(pl.dist, group=kept_pl_meta$Season)
+permutest(dispersion)
+plot(dispersion, hull=FALSE, ellipse=TRUE) ##sd ellipse
+
+```
+
