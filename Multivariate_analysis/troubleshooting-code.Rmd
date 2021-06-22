@@ -1,0 +1,162 @@
+---
+title: "some troubleshooting"
+author: 'An Bui'
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries-data, message = FALSE}
+# libraries
+library(tidyverse)
+library(vegan)
+library(here)
+
+# data
+# algal  communities
+#Note: 2015 has been (sloppily) removed from the original data set "pl_div.csv" and "pl_div_meta.csv"
+PointLoma <- read_csv(here::here("Multivariate_analysis", "PL_div.csv")) %>%
+  column_to_rownames("Site")
+
+Carmelbay <- read_csv(here::here("Multivariate_analysis", "CMB_div.csv")) %>% 
+  column_to_rownames("Site")
+
+# environmental variables
+pl_meta <- read_csv(here::here("Multivariate_analysis",
+                               "PL_div_meta.csv"))
+
+cm_meta <- read_csv(here::here("Multivariate_analysis", 
+                               "CMB_div_meta.csv"))
+# set up a "metadata" frame - will be useful for plotting later!
+site_type_pl <- pl_meta %>% 
+  # selects the named columns
+  select(Site, Region, Plot, Treatment, Season, Year)
+
+site_type_cm <- cm_meta %>% 
+    select(Site, Region, Plot, Treatment, Season, Year)
+
+```
+
+#### NMDS
+
+Non-metric Multidimensional Scaling  
+
+Ok, so this is kinda tricky because it turns out that some of your sites had 0 observations. So, not an issue with your species! I filtered out sites with 0 observations by summing all observations for each site, then filtering out any row with a sum of observations greater than 0 (essentially only keeping sites with some algae counted).  
+
+```{r algae-NMDS}
+PointLoma1 <- PointLoma %>% 
+  # filter out sites with 0 observations
+  mutate(sum = rowSums(across(where(is.numeric)))) %>% 
+  filter(sum > 0) %>% 
+  select(-sum)
+
+Carmelbay1 <- Carmelbay %>% 
+    mutate(sum = rowSums(across(where(is.numeric)))) %>% 
+  filter(sum > 0) %>% 
+  select(-sum)
+
+```
+
+Then, I pulled a vector of the sites that were kept (seems like there are 409 of them). This is going to be useful later, when the `meta` dataframe has to be filtered for the sites that are included in the NMDS.
+```{r}
+# pull row names from PointLoma1 (which will tell you which sites DID have observations)
+kept_sites_pl <- PointLoma1 %>% 
+  # turn row names back into a column
+  rownames_to_column("site") %>% 
+  # pull the site column as a vector
+  pull(site)
+
+kept_sites_pl
+
+kept_sites_cm <- Carmelbay1 %>% 
+  # turn row names back into a column
+  rownames_to_column("site") %>% 
+  # pull the site column as a vector
+  pull(site)
+
+kept_sites_cm
+```
+
+Now the NMDS! Should be working.
+```{r}
+pl_alg_NMDS <- metaMDS(PointLoma1)
+pl_alg_NMDS
+
+cm_alg_NMDS <- metaMDS(Carmelbay1)
+cm_alg_NMDS
+```
+
+Here's where I filter the `meta` data frame for all sites in `kept_sites`:
+```{r}
+kept_pl_meta <- pl_meta %>% 
+  filter(Site %in% kept_sites_pl) 
+
+kept_cm_meta <- cm_meta %>% 
+  filter(Site %in% kept_sites_cm) 
+
+```
+
+And now a plot:
+```{r NMDS-plot}
+# extract outputs of nMDS into data frame
+nmds_df_pl <- as_tibble(pl_alg_NMDS$points) %>% 
+  # binding it with metadata
+  bind_cols(kept_pl_meta, .) 
+
+#Need to remove 2015 from data in PL & CMB
+
+nmds_plot_pl <- ggplot(nmds_df_pl, aes(x = MDS1, y = MDS2, color = Treatment, shape = Treatment)) +
+  geom_point(size = 3, alpha = 0.8) +
+  stat_ellipse()+
+  facet_grid(Year~Season)
+nmds_plot_pl
+
+
+nmds_df_cm <- as_tibble(cm_alg_NMDS$points) %>% 
+  bind_cols(kept_cm_meta, .) 
+
+nmds_plot_cm <- ggplot(nmds_df_cm, aes(x = MDS1, y = MDS2, color = Treatment, shape = Treatment)) +
+  geom_point(size = 3, alpha = 0.8) +
+  xlim(-0.25, 0.30) +
+  ylim(-0.20, 0.15) +
+  stat_ellipse() +
+  facet_grid(Year~Season)
+nmds_plot_cm
+```
+
+```{r}
+#PERMANOVA
+pl.div <- adonis2(PointLoma1 ~Treatment + Season + Region +
+                  Treatment*Season +
+                  Season*Region, data = kept_pl_meta,
+                  permutations = 999, method = "bray")
+pl.div
+#LOOK @ Res: plot to plot variation describe 90% of the differences!!!
+
+cm.div <- adonis2(Carmelbay1 ~Treatment + Season + Region +
+                  Treatment*Season +
+                  Season*Region, data = kept_cm_meta,
+                  permutations = 999, method = "bray")
+cm.div
+```
+
+```{r}
+#dispersion
+pl.dist <- vegdist(PointLoma1,
+                   method = "bray")
+
+disp_pl <- betadisper(pl.dist, group=kept_pl_meta$Treatment)
+permutest(disp_pl)
+plot(disp_pl, hull=FALSE, ellipse=TRUE) ##sd ellipse
+
+cm.dist <- vegdist(Carmelbay1,
+                   method = "bray")
+
+disp_cm <- betadisper(cm.dist, group = kept_cm_meta$Treatment)
+permutest(disp_cm)
+plot(disp_cm, hull = FALSE, ellipse = TRUE)
+```
+

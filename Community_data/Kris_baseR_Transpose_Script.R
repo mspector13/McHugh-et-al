@@ -1,10 +1,12 @@
 library(tidyverse)
 library(readxl)
+library(here)
+library(gdata)
 
 # PL_Community -----------------------------------------------------------------
 
 #Read in data, as a tibble
-whateveryouwant <- read_xls("McHugh_Point Loma Data.xls")
+whateveryouwant <- read_xls(here::here("Community_data", "McHugh_Point Loma Data.xls"))
 
 #convert to a dataframe, because bas R
 whateveryouwant <- as.data.frame(whateveryouwant)
@@ -30,7 +32,7 @@ for (cs in c(7:19)){
 
 head(PL_data)
 
-write.csv(PL_data, "PL_data.csv", row.names = F)
+write.csv(PL_data, "PL_comm_data.csv", row.names = F)
 
 # CM_Community###ERRORS ------------------------------------------------------------
 
